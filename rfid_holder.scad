@@ -1,5 +1,8 @@
 
 $fn = 60;
+print = true;
+show = false;
+explode = false;
 
 depth = 47.5;
 corner = 8.5;
@@ -14,6 +17,9 @@ wall_width = 3;
 support_height = 43;
 support_clearance = 1;
 inner_support_r = 10;
+top_clearance = 5;
+slots = 30;
+slot_clearance = 0.5;
 
 rfid_width = 39.5;
 rfid_length = 60;
@@ -64,10 +70,10 @@ module rfid () {
     }
 }
 
+s_width = rfid_width + wall_width*2 + support_clearance + corner;
+s_height = support_height + wall_width;
+s_thick = glass_clearance + rfid_depth + support_clearance + front_clearance + wall_width;
 module card_support() {
-    s_width = rfid_width + wall_width*2 + support_clearance + corner;
-    s_height = support_height + wall_width;
-    s_thick = glass_clearance + rfid_depth + support_clearance + front_clearance + wall_width;
     translate([-s_width,-s_thick,0]) {
         difference() {
             union() {
@@ -97,19 +103,41 @@ module card_support() {
                 }
             }
             translate([s_width,s_thick,-0.01]) cylinder(r = corner, h = s_height+0.02);
+            translate([s_width,s_thick,0])  cover(true);
         }
     }
 }
 
-module part() {
-
-    // build some rails so the part will slide in
-    card_support();
-
-    %translate([-rfid_width-wall_width-support_clearance/2-corner,-glass_clearance-support_clearance/2,wall_width]) rfid();
+c_width = rfid_width + wall_width*3 + support_clearance;
+t_height = rfid_length - s_height + wall_width * 2 + top_clearance;
+c_clearance = 1;
+c_height = t_height + s_height;
+c_offset = wall_width+inner_support_r;
+module cover (cutout = false) {
+    slot_height = cutout ? slots + 5 : slots;
+    slot_width = cutout ? wall_width + slot_clearance : wall_width;
+    translate([-s_width-wall_width,-s_thick-wall_width,0]) {
+        difference() {
+            cube([c_width,s_thick+wall_width,c_height]);
+            translate([wall_width*2,wall_width+0.01,-0.01+s_height]) cube([c_width - wall_width*3, s_thick+0.01, t_height-wall_width+0.01]);
+            translate([wall_width+0.01,wall_width+0.01,-0.01]) cube([c_width - wall_width+0.01, s_thick+0.01, c_height-t_height+0.01]);
+            translate([c_width+corner-c_offset,-0.01,-0.01]) cube([c_offset,wall_width+0.03,s_height+0.01]);
+        }
+        translate([c_width+corner-c_offset,wall_width/4,c_height-t_height-slot_height+0.01]) {
+            cube([slot_width,slot_width/2,slot_height]);
+            translate([slot_width/2,0,0]) cube([slot_width/2,slot_width,slot_height]);
+        }
+        translate([wall_width,s_thick+wall_width-wall_width/4-s_thick/2,c_height-t_height-slot_height+0.01]) {
+            cube([slot_width/2,slot_width/2,slot_height]);
+            //translate([slot_width/2,-slot_width+slot_width/4,0]) cube([slot_width/2,slot_width*2,slot_height]);
+        }
+    }
 }
 
-
-%wall();
-part();
+if (!print && show) %wall();
+card_support();
+ct = print ? [0,-depth/2-s_thick,c_height] : (explode ? [0,-10,40] : [0,0,0]);
+cr = print ? [180,0,0] : 0;
+translate(ct) rotate(cr) cover();
+if (!print) %translate([-rfid_width-wall_width-support_clearance/2-corner,-glass_clearance-support_clearance/2,wall_width]) rfid();
 
