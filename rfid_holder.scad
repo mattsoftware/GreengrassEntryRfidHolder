@@ -9,7 +9,7 @@ holes = [
     [36.58, -2]
 ];
 glass_clearance = 2;
-front_clearance = 2;
+front_clearance = 1;
 wall_width = 3;
 support_height = 43;
 support_clearance = 1;
@@ -79,9 +79,9 @@ module card_support() {
                         translate([0,-wall_width+0.01,-0.01]) cube([wall_width+0.01,wall_width*2+0.02,s_height+0.02]);
                     }
                 }
-                translate([s_width-inner_support_r-wall_width,-inner_support_r,0]) cube([inner_support_r,inner_support_r,s_height]);
+                translate([s_width-inner_support_r-wall_width,-inner_support_r-wall_width,0]) cube([inner_support_r,inner_support_r+wall_width,s_height]);
             }
-            translate([s_width-wall_width-inner_support_r,-inner_support_r,-0.01]) cylinder(r = inner_support_r, h = s_height+0.02);
+            translate([s_width-wall_width-inner_support_r,-inner_support_r-wall_width,-0.01]) cylinder(r = inner_support_r, h = s_height+0.02);
             translate([
                 wall_width,
                 s_thick-rfid_depth-support_clearance-glass_clearance,
@@ -106,7 +106,7 @@ module part() {
     // build some rails so the part will slide in
     card_support();
 
-    %translate([-rfid_width-wall_width-support_clearance/2-corner,-glass_clearance,wall_width]) rfid();
+    %translate([-rfid_width-wall_width-support_clearance/2-corner,-glass_clearance-support_clearance/2,wall_width]) rfid();
 }
 
 
