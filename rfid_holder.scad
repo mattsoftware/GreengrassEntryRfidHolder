@@ -19,7 +19,7 @@ support_clearance = 1;
 inner_support_r = 10;
 top_clearance = 5;
 slots = 30;
-slot_clearance = 0.5;
+slot_clearance = 1;
 
 rfid_width = 39.5;
 rfid_length = 60;
@@ -35,6 +35,9 @@ rfid_pin_hole = 0.9;
 rfid_pin_count = 7;
 rfid_pin_xy = [10,0.7];
 rfid_pin_pitch = 2.54;
+
+cat_5_hole = 5 + slot_clearance;
+rivit = 2;
 
 module wall () {
     height = 400;
@@ -78,7 +81,15 @@ module card_support() {
         difference() {
             union() {
                 cube([s_width,s_thick,s_height]);
-                translate([s_width-wall_width,s_thick-depth+wall_width+1,0]) cube([wall_width,depth-wall_width-1,s_height]);
+                difference() {
+                    mount_length = depth-wall_width-1;
+                    mount_height = s_height;
+                    translate([s_width-wall_width,s_thick-mount_length,0]) cube([wall_width,mount_length,mount_height]);
+                    translate([s_width-wall_width-0.01,-mount_length/2,0]) rotate([0,90,0]) {
+                        translate([-mount_height/3,0,0]) cylinder(d=rivit, h=wall_width+0.02);
+                        translate([-mount_height/3*2,0,0]) cylinder(d=rivit, h=wall_width+0.02);
+                    }
+                }
                 translate([s_width,s_thick-depth+wall_width+1,0]) {
                     difference() {
                         cylinder(r=wall_width, h=s_height);
@@ -103,7 +114,7 @@ module card_support() {
                 }
             }
             translate([s_width,s_thick,-0.01]) cylinder(r = corner, h = s_height+0.02);
-            translate([s_width,s_thick,0])  cover(true);
+            translate([s_width,s_thick,0]) cover(true);
         }
     }
 }
@@ -122,10 +133,16 @@ module cover (cutout = false) {
             translate([wall_width*2,wall_width+0.01,-0.01+s_height]) cube([c_width - wall_width*3, s_thick+0.01, t_height-wall_width+0.01]);
             translate([wall_width+0.01,wall_width+0.01,-0.01]) cube([c_width - wall_width+0.01, s_thick+0.01, c_height-t_height+0.01]);
             translate([c_width+corner-c_offset,-0.01,-0.01]) cube([c_offset,wall_width+0.03,s_height+0.01]);
+            translate([c_width-wall_width-cat_5_hole/2,s_thick+wall_width,c_height-wall_width-0.01]) {
+                hull() {
+                    cylinder(d = cat_5_hole, h=wall_width+0.02);
+                    translate([0,-cat_5_hole/2,0]) cylinder(d = cat_5_hole, h=wall_width+0.02);
+                }
+            }
         }
         translate([c_width+corner-c_offset,wall_width/4,c_height-t_height-slot_height+0.01]) {
             translate([0,(cutout ? -slot_clearance/2 : 0),0]) cube([slot_width+(cutout ? slot_clearance/2 : 0),slot_width/2+slot_clearance,slot_height]);
-            translate([slot_width/2-(cutout ? slot_clearance/2 : 0),(cutout ? -slot_clearance/2 : 0),0]) cube([slot_width/2+(cutout ? slot_clearance : 0),slot_width+(cutout ? slot_clearance : 0),slot_height]);
+            translate([slot_width/2-(cutout ? slot_clearance/2 : 0),(cutout ? -slot_clearance/2 : 0),0]) cube([slot_width/2+(cutout ? slot_clearance : 0),slot_width*1.5+(cutout ? slot_clearance : 0),slot_height]);
         }
         translate([wall_width,s_thick+wall_width-wall_width/4-s_thick/2,c_height-t_height-slot_height+0.01]) {
             translate([0,(cutout ? -slot_clearance/2 : 0),0]) cube([slot_width/2+slot_clearance,slot_width/2+(cutout ? slot_clearance: 0),slot_height]);
