@@ -6,6 +6,7 @@ explode = true;
 
 depth = 47.5;
 corner = 8.5;
+corner_b = 4;
 hole = 4;
 holes = [
     [9.46, 0],
@@ -48,7 +49,7 @@ module wall () {
         union() {
             translate([0,-depth,-height/2]) cube([thick, depth, height]);
             translate([-length/2,0,-height/2]) cube([length,wthick,height]);
-            translate([0,0,-height/2]) cylinder(r = corner, h = height);
+            translate([0,0,-height/2]) resize([corner_b,0,0]) cylinder(r = corner, h = height);
         }
         translate([0,-holes[0][0],holes[0][1]]) rotate([0, 90, 0]) cylinder(d = hole, h = 5, center = true);
         translate([0,-holes[1][0],holes[1][1]]) rotate([0, 90, 0]) cylinder(d = hole, h = 5, center = true);
@@ -113,7 +114,7 @@ module card_support() {
                     ]);
                 }
             }
-            translate([s_width,s_thick,-0.01]) cylinder(r = corner, h = s_height+0.02);
+            translate([s_width,s_thick,-0.01]) resize([0,corner_b,0]) cylinder(r = corner, h = s_height+0.02);
             translate([s_width,s_thick,0]) cover(true);
         }
     }
