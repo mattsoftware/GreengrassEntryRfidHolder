@@ -3,12 +3,15 @@ $fn = 30;
 
 beam_depth = 47.5;
 corner_a = 8.5;
-corner_b = 4; // TODO: measure
+corner_b = 3.5;
 
 wall_width = 3;
 clearance = 0.5;
 glass_clearance = 2;
-rfid_clearance = 3.5;
+rfid_clearance = 3.5 + 5;
+mount_offset = 15; // TODO
+overall_height = 60 + 20; // TODO: must be bigger than the rfid_length plus extra for cable
+rivit_hole = 3.5;
 
 rfid_width = 39.5;
 rfid_length = 60;
@@ -68,12 +71,37 @@ module rfid (cutout = false) {
 h_width = rfid_width + wall_width * 2 + clearance * 2;
 h_height = rfid_length - rfid_cap_offset - clearance + wall_width;
 h_depth = glass_clearance + rfid_depth + rfid_clearance + clearance * 2 + wall_width;
-module holder() {
+module holder(side = -1) {
     difference() {
-        cube([h_width,h_depth,h_height], center=true);
+        union() {
+            cube([h_width,h_depth,h_height], center=true);
+        }
         translate([0,0,wall_width+0.01]) cube([h_width-wall_width*4,h_depth+0.02,h_height-wall_width*2+0.01], center=true);
         translate([0,h_depth/2-rfid_depth/2-glass_clearance-clearance,rfid_length/2-h_height/2+wall_width]) rfid(true);
     }
+
+    // Mounting bracket
+    spacer_width = mount_offset-wall_width;
+    spacer_length = h_depth + spacer_width;
+    translate([(h_width/2-wall_width/2+mount_offset)*side,-beam_depth/2+h_depth/2,overall_height/2-h_height/2]) {
+        difference() {
+            union() {
+                cube([wall_width,beam_depth,overall_height], center=true);
+                translate([(-spacer_width/2-wall_width/2)*side,beam_depth/2-spacer_length/2,0]) cube([spacer_width,spacer_length,overall_height], center=true);
+            }
+            translate([(-spacer_width-wall_width/2)*side,beam_depth/2-spacer_length,0]) cylinder(r = spacer_width, h=overall_height+0.02, center=true);
+            translate([(-mount_offset/2+wall_width/2)*side,+beam_depth/2-h_depth/2,h_height/2]) cube([mount_offset+0.02,h_depth+0.01,overall_height-h_height+0.01], center=true);
+            for (i = [-overall_height/3, overall_height/3]) {
+                translate([0,-beam_depth/4,i]) rotate([0,90,0]) cylinder(d = rivit_hole, center=true, h=wall_width+0.02);
+            }
+
+            // Create a space for the corner tube
+            c_a = corner_a + clearance;
+            c_b = corner_b + clearance;
+            translate([wall_width/2*side,beam_depth/2,0]) resize([c_b,0,0]) cylinder(d = c_a, h=overall_height + 0.02, center=true);
+        }
+    }
+
 }
 
 //%wall();
