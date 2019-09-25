@@ -1,5 +1,6 @@
 
-$fn = 30;
+$fn = 60;
+print = true;
 
 beam_depth = 47.5;
 corner_a = 8.5;
@@ -9,9 +10,10 @@ wall_width = 3;
 clearance = 0.5;
 glass_clearance = 2;
 rfid_clearance = 3.5 + 5;
-mount_offset = 15; // TODO
-overall_height = 60 + 20; // TODO: must be bigger than the rfid_length plus extra for cable
+mount_offset = 15;
+overall_height = 60 + 30; // must be bigger than the rfid_length plus extra for cable
 rivit_hole = 3.5;
+rail_height = 40; // must be less than the h_height
 
 rfid_width = 39.5;
 rfid_length = 60;
@@ -90,7 +92,9 @@ module holder(side = -1) {
                 translate([(-spacer_width/2-wall_width/2)*side,beam_depth/2-spacer_length/2,0]) cube([spacer_width,spacer_length,overall_height], center=true);
             }
             translate([(-spacer_width-wall_width/2)*side,beam_depth/2-spacer_length,0]) cylinder(r = spacer_width, h=overall_height+0.02, center=true);
-            translate([(-mount_offset/2+wall_width/2)*side,+beam_depth/2-h_depth/2,h_height/2]) cube([mount_offset+0.02,h_depth+0.01,overall_height-h_height+0.01], center=true);
+            translate([(-mount_offset/2+wall_width/2)*side,+beam_depth/2-h_depth/2+wall_width/2,h_height/2]) {
+                cube([mount_offset+0.02,h_depth+0.01-wall_width,overall_height-h_height+0.01], center=true);
+            }
             for (i = [-overall_height/3, overall_height/3]) {
                 translate([0,-beam_depth/4,i]) rotate([0,90,0]) cylinder(d = rivit_hole, center=true, h=wall_width+0.02);
             }
@@ -101,13 +105,58 @@ module holder(side = -1) {
             translate([wall_width/2*side,beam_depth/2,0]) resize([c_b,0,0]) cylinder(d = c_a, h=overall_height + 0.02, center=true);
         }
     }
-
 }
 
-//%wall();
+module rail(size, height, rotation, clearance) {
+    hull() {
+        cylinder(d=size/2+clearance, h=height, center = true);
+        translate([-size,0,0]) cylinder(d=size/2+clearance, h=height, center = true);
+    }
+    hull () {
+        translate([-size,0,0]) cylinder(d=size/2+clearance, h=height, center = true);
+        translate([-size,0,0]) rotate(rotation) translate([-size/2,0,0]) cylinder(d=size/2+clearance, h=height, center = true);
+    }
+}
 
-//rfid();
+c_height = overall_height;
+c_width = h_width + mount_offset+wall_width;
+c_depth = h_depth;
+module cover(cutout = false, side = -1) {
+    width = c_width;
+    height = c_height;
+    depth = c_depth;
+    translate([-wall_width/2*side,0,0]) {
+        difference() {
+            cube([width+(cutout?clearance:0),depth+(cutout?clearance:0),height+(cutout?clearance:0)], center=true);
+            translate([wall_width*2*side,wall_width/2+(cutout?clearance:0),-wall_width/2-5]) cube([width,depth-wall_width+1,height-wall_width+10], center=true);
+            translate([wall_width*side,wall_width,-height+h_height]) cube([width,depth,height], center=true);
+            translate([(width/2-mount_offset/2)*side,-depth/2+wall_width/2,-height/2+h_height/2-0.01]) cube([mount_offset+1,wall_width+2,h_height+0.01], center=true);
+        }
+    }
+    // rails
+    translate([(c_width/2-mount_offset/2-wall_width/2)*side,-c_depth/2+wall_width,-c_height/2+wall_width/2+h_height]) cube([mount_offset,wall_width*2,wall_width], center=true);
+    translate([0,0,-height/2-rail_height/2+h_height]) {
+        translate ([(width/2-mount_offset-wall_width/2)*side,-depth/2+wall_width-wall_width/4,0.01]) {
+            rotate(side == 1 ? 180 : 0) rail(wall_width, rail_height, 90*side, cutout ? clearance : 0);
+        }
+        translate ([(-c_width/2+wall_width/2)*side,c_depth/2-wall_width/4-wall_width*2,0.01]) {
+            rotate(side == 1 ? 180 : 0) rail(wall_width, rail_height, 270*side, cutout ? clearance : 0);
+        }
+    }
+}
 
-translate([0,0,h_height/2-rfid_length/2-wall_width]) holder();
+if (!print) {
+    //%translate([(mount_offset+beam_depth/2)*side,0,0]) wall();
+    %translate([0,0,-overall_height/2+rfid_length/2+wall_width]) rfid();
+}
 
+side = -1;
+difference() {
+    translate([0,0,h_height/2-overall_height/2]) holder(side);
+    translate([mount_offset/2*side,0,0]) cover(true, side);
+
+}
+translate([(-c_width/2+h_width/2+mount_offset+wall_width/2)*side,(print ? 30 : 0),0]) {
+    rotate ([print ? 180 : 0,0,0]) cover(false, side);
+}
 
