@@ -13,7 +13,8 @@ rfid_clearance = 3.5 + 5;
 mount_offset = 15;
 overall_height = 60 + 30; // must be bigger than the rfid_length plus extra for cable
 rivit_hole = 3.5;
-rail_height = 40; // must be less than the h_height
+rail_height = 20; // must be less than the h_height
+cover_rail_offset = wall_width * 2;
 
 rfid_width = 39.5;
 rfid_length = 60;
@@ -74,6 +75,7 @@ h_width = rfid_width + wall_width * 2 + clearance * 2;
 h_height = rfid_length - rfid_cap_offset - clearance + wall_width;
 h_depth = glass_clearance + rfid_depth + rfid_clearance + clearance * 2 + wall_width;
 module holder(side = -1) {
+    // holder
     difference() {
         union() {
             cube([h_width,h_depth,h_height], center=true);
@@ -103,6 +105,11 @@ module holder(side = -1) {
             c_a = corner_a + clearance;
             c_b = corner_b + clearance;
             translate([wall_width/2*side,beam_depth/2,0]) resize([c_b,0,0]) cylinder(d = c_a, h=overall_height + 0.02, center=true);
+        }
+        // T rail to guide the cover
+        translate([-wall_width/2+cover_rail_offset,h_width/2-h_depth,-h_height/2-rail_height/2+h_height]) rotate(-90) {
+            rail(wall_width, rail_height, 90, 0);
+            rail(wall_width, rail_height, -90, 0);
         }
     }
 }
@@ -134,7 +141,7 @@ module cover(cutout = false, side = -1) {
         }
     }
     // rails
-    translate([(c_width/2-mount_offset/2-wall_width/2)*side,-c_depth/2+wall_width,-c_height/2+wall_width/2+h_height]) cube([mount_offset,wall_width*2,wall_width], center=true);
+    //translate([(c_width/2-mount_offset/2-wall_width/2)*side,-c_depth/2+wall_width,-c_height/2+wall_width/2+h_height]) cube([mount_offset,wall_width*2,wall_width], center=true);
     translate([0,0,-height/2-rail_height/2+h_height]) {
         translate ([(width/2-mount_offset-wall_width/2)*side,-depth/2+wall_width-wall_width/4,0.01]) {
             rotate(side == 1 ? 180 : 0) rail(wall_width, rail_height, 90*side, cutout ? clearance : 0);
