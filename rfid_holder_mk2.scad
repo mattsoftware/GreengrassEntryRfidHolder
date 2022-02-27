@@ -1,6 +1,6 @@
 
 $fn = 60;
-print = true;
+print = false;
 
 beam_depth = 47.5;
 corner_a = 8.5;
@@ -94,8 +94,8 @@ module holder(side = -1) {
                 translate([(-spacer_width/2-wall_width/2)*side,beam_depth/2-spacer_length/2,0]) cube([spacer_width,spacer_length,overall_height], center=true);
             }
             translate([(-spacer_width-wall_width/2)*side,beam_depth/2-spacer_length,0]) cylinder(r = spacer_width, h=overall_height+0.02, center=true);
-            translate([(-mount_offset/2+wall_width/2)*side,+beam_depth/2-h_depth/2+wall_width/2,h_height/2]) {
-                cube([mount_offset+0.02,h_depth+0.01-wall_width,overall_height-h_height+0.01], center=true);
+            translate([(-mount_offset/2+wall_width/2)*side,+beam_depth/2-h_depth/2,h_height/2]) {
+                cube([mount_offset+0.02,h_depth,overall_height-h_height+0.01], center=true);
             }
             for (i = [-overall_height/3, overall_height/3]) {
                 translate([0,-beam_depth/4,i]) rotate([0,90,0]) cylinder(d = rivit_hole, center=true, h=wall_width+0.02);
@@ -104,7 +104,7 @@ module holder(side = -1) {
             // Create a space for the corner tube
             c_a = corner_a + clearance;
             c_b = corner_b + clearance;
-            translate([wall_width/2*side,beam_depth/2,0]) resize([c_b,0,0]) cylinder(d = c_a, h=overall_height + 0.02, center=true);
+            translate([wall_width/2*side,beam_depth/2,0]) resize([c_b*2,0,0]) cylinder(r = c_a, h=overall_height + 0.02, center=true);
         }
         // T rail to guide the cover
         translate([-wall_width/2+cover_rail_offset,h_width/2-h_depth,-h_height/2-rail_height/2+h_height]) rotate(-90) {
@@ -138,6 +138,14 @@ module cover(cutout = false, side = -1) {
             translate([wall_width*2*side,wall_width/2+(cutout?clearance:0),-wall_width/2-5]) cube([width,depth-wall_width+1,height-wall_width+10], center=true);
             translate([wall_width*side,wall_width,-height+h_height]) cube([width,depth,height], center=true);
             translate([(width/2-mount_offset/2)*side,-depth/2+wall_width/2,-height/2+h_height/2-0.01]) cube([mount_offset+1,wall_width+2,h_height+0.01], center=true);
+            if (!cutout) {
+                // cover rail slot
+                rail_width = wall_width/4;
+                translate([-c_width/2+cover_rail_offset,0,-c_height/2+rail_height/2+h_height-clearance]) cube([rail_width,20,rail_height+clearance*2], center=true);
+            } else {
+                // Ignore cutting out any of the top stuff
+                translate([0,0,h_height]) cube([c_width+1,20,c_height], center=true);
+            }
         }
     }
     // rails
@@ -163,7 +171,7 @@ difference() {
     translate([mount_offset/2*side,0,0]) cover(true, side);
 
 }
-translate([(-c_width/2+h_width/2+mount_offset+wall_width/2)*side,(print ? 30 : 0),0]) {
-    rotate ([print ? 180 : 0,0,0]) cover(false, side);
-}
+//translate([(-c_width/2+h_width/2+mount_offset+wall_width/2)*side,(print ? 30 : 0),0]) {
+//    rotate ([print ? 180 : 0,0,0]) cover(false, side);
+//}
 

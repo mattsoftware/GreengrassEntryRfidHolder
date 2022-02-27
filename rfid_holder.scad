@@ -1,8 +1,8 @@
 
 $fn = 60;
-print = true;
+print = false;
 show = true;
-explode = true;
+explode = false;
 
 depth = 47.5;
 corner = 8.5;
@@ -134,7 +134,7 @@ module cover (cutout = false) {
             translate([wall_width*2,wall_width+0.01,-0.01+s_height]) cube([c_width - wall_width*3, s_thick+0.01, t_height-wall_width+0.01]);
             translate([wall_width+0.01,wall_width+0.01,-0.01]) cube([c_width - wall_width+0.01, s_thick+0.01, c_height-t_height+0.01]);
             translate([c_width+corner-c_offset,-0.01,-0.01]) cube([c_offset,wall_width+0.03,s_height+0.01]);
-            translate([c_width-wall_width-cat_5_hole/2,s_thick+wall_width,c_height-wall_width-0.01]) {
+            #translate([c_width-wall_width-cat_5_hole/2,s_thick+wall_width,c_height-wall_width-0.01]) {
                 hull() {
                     cylinder(d = cat_5_hole, h=wall_width+0.02);
                     translate([0,-cat_5_hole/2,0]) cylinder(d = cat_5_hole, h=wall_width+0.02);
@@ -152,7 +152,7 @@ module cover (cutout = false) {
     }
 }
 
-if (!print && show) %wall();
+//if (!print && show) %wall();
 card_support();
 ct = print ? [0,-depth/2-s_thick,c_height] : (explode ? [0,0,60] : [0,0,0]);
 cr = print ? [180,0,0] : 0;
